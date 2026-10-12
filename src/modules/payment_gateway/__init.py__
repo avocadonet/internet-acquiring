@@ -1,0 +1,54 @@
+"""Payment Gateway & 54-FZ Module.
+
+Provides T-Bank Acquiring API v2 integration, 54-FZ fiscal receipt generation,
+SHA-256 signature verification, and FastAPI webhook routing.
+Compliant with mypy --strict and Python 3.12+.
+"""
+
+from src.modules.payment_gateway.client import TBankPaymentClient
+from src.modules.payment_gateway.config import (
+    PaymentGatewayConfig,
+    TaxationType,
+    TaxRateType,
+    get_payment_gateway_config,
+)
+from src.modules.payment_gateway.exceptions import (
+    FiscalizationError,
+    InvalidSignatureError,
+    PaymentGatewayError,
+    PaymentGatewayTimeoutError,
+    TBankAPIError,
+    TBankNetworkError,
+    TerminalMismatchError,
+)
+from src.modules.payment_gateway.hasher import (
+    generate_tbank_token,
+    verify_tbank_token,
+)
+from src.modules.payment_gateway.receipt import ReceiptBuilder
+from src.modules.payment_gateway.routers import router as webhook_router
+
+__all__ = [
+    # HTTP Client
+    "TBankPaymentClient",
+    # Fiscalization
+    "ReceiptBuilder",
+    "TaxationType",
+    "TaxRateType",
+    # Cryptography
+    "generate_tbank_token",
+    "verify_tbank_token",
+    # Configuration
+    "PaymentGatewayConfig",
+    "get_payment_gateway_config",
+    # Exceptions
+    "PaymentGatewayError",
+    "InvalidSignatureError",
+    "TerminalMismatchError",
+    "FiscalizationError",
+    "TBankAPIError",
+    "TBankNetworkError",
+    "PaymentGatewayTimeoutError",
+    # Webhook Router
+    "webhook_router",
+]

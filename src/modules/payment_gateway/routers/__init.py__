@@ -1,0 +1,9 @@
+"""Routers package for payment_gateway module.
+
+Located at: src/modules/payment_gateway/routers/__init__.py
+Compliant with mypy --strict and Python 3.12+.
+"""
+
+from src.modules.payment_gateway.routers.webhook_router import router
+
+__all__ = ["router"]

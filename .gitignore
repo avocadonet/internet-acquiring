@@ -1,0 +1,35 @@
+# Виртуальное окружение (из вывода ls)
+.venv/
+venv/
+ENV/
+
+# Кэши инструментов и тестов (из вывода ls)
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# Артефакты покрытия тестами (из вывода ls)
+.coverage
+htmlcov/
+.coverage.*
+coverage.xml
+
+# Байткод Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Переменные окружения и секреты (терминалы, токены Т-Банка)
+.env
+.env.local
+*.env
+
+# Редакторы кода и IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Операционная система
+.DS_Store
+Thumbs.db
