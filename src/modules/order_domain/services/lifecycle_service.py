@@ -169,6 +169,7 @@ class OrderLifecycleService(IOrderInternalService):
                 "payment_id": order.payment_id,
                 "amount_kopecks": order.amount_kopecks,
                 "reason": error_reason,
+                "customer_telegram_id": order.user_id,
             }
             repo.add_outbox_task(
                 task_type=OutboxTaskType.EXECUTE_PAYMENT_REFUND,
