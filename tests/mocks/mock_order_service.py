@@ -1,6 +1,6 @@
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from src.shared.contracts.orders import (
@@ -25,18 +25,13 @@ class MockOrderState:
     payment_url: str | None = None
     published_message_id: int | None = None
     refund_details: dict[str, Any] | None = None
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
 
 class MockOrderService(IOrderService, IOrderInternalService):
     """
     Мок-сервис заказов, реализующий контракты IOrderService и IOrderInternalService.
     Используется для unit- и integration-тестирования смежных модулей.
-    
-    Позволяет:
-    - Инспектировать вызовы методов (история аргументов);
-    - Управлять сценариями сбоев (raise_on_create, raise_on_lifecycle);
-    - Верифицировать конечное состояние заказа в памяти.
     """
 
     def __init__(
@@ -47,10 +42,8 @@ class MockOrderService(IOrderService, IOrderInternalService):
         self.default_price_kopecks = default_price_kopecks
         self.default_payment_url_prefix = default_payment_url_prefix
 
-        # Хранилище состояния в памяти
         self.orders: dict[uuid.UUID, MockOrderState] = {}
 
-        # Журналы вызовов для ассертов в тестах
         self.create_order_calls: list[CreateOrderInputDTO] = []
         self.payment_succeeded_calls: list[dict[str, Any]] = []
         self.publish_started_calls: list[uuid.UUID] = []
@@ -58,7 +51,6 @@ class MockOrderService(IOrderService, IOrderInternalService):
         self.publish_failed_calls: list[dict[str, Any]] = []
         self.refund_succeeded_calls: list[dict[str, Any]] = []
 
-        # Флаги симуляции ошибок
         self.raise_on_create: Exception | None = None
         self.raise_on_lifecycle: Exception | None = None
 
@@ -73,10 +65,6 @@ class MockOrderService(IOrderService, IOrderInternalService):
         self.refund_succeeded_calls.clear()
         self.raise_on_create = None
         self.raise_on_lifecycle = None
-
-    # -------------------------------------------------------------------------
-    # Реализация контракта IOrderService (для модуля bot_ingress)
-    # -------------------------------------------------------------------------
 
     async def create_order(self, data: CreateOrderInputDTO) -> OrderCreatedResultDTO:
         self.create_order_calls.append(data)
@@ -101,10 +89,6 @@ class MockOrderService(IOrderService, IOrderInternalService):
             payment_url=payment_url,
             amount_kopecks=self.default_price_kopecks,
         )
-
-    # -------------------------------------------------------------------------
-    # Реализация контракта IOrderInternalService (для payment_gateway, воркеров и compensation)
-    # -------------------------------------------------------------------------
 
     async def handle_payment_succeeded(
         self, order_id: uuid.UUID, payment_id: str
@@ -156,7 +140,7 @@ class MockOrderService(IOrderService, IOrderInternalService):
         if order := self.orders.get(order_id):
             order.status = OrderStatus.REFUND_REQUIRED
             order.refund_details = {
-                "failed_at": datetime.now(timezone.utc).isoformat(),
+                "failed_at": datetime.now(UTC).isoformat(),
                 "reason": error_reason,
             }
 
@@ -173,13 +157,9 @@ class MockOrderService(IOrderService, IOrderInternalService):
         if order := self.orders.get(order_id):
             order.status = OrderStatus.REFUNDED
             details = order.refund_details or {}
-            details["refunded_at"] = datetime.now(timezone.utc).isoformat()
+            details["refunded_at"] = datetime.now(UTC).isoformat()
             details["provider_response"] = refund_info
             order.refund_details = details
-
-    # -------------------------------------------------------------------------
-    # Утилитарные методы для валидации в тестах
-    # -------------------------------------------------------------------------
 
     def get_order(self, order_id: uuid.UUID | str) -> MockOrderState | None:
         """Получает заказ из внутреннего in-memory хранилища."""
